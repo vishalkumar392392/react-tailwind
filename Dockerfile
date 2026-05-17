@@ -11,9 +11,9 @@ WORKDIR /app
 # npm install only re-runs when dependencies actually change, not on every code edit.
 COPY package.json package-lock.json ./
 
-# Install dependencies.
-# --frozen-lockfile ensures the lockfile is respected (no silent upgrades).
-RUN npm ci --frozen-lockfile
+# Install dependencies. `npm ci` already enforces the lockfile and fails
+# if package.json and package-lock.json are out of sync — no extra flag needed.
+RUN npm ci
 
 # Now copy the rest of the source code.
 COPY . .
