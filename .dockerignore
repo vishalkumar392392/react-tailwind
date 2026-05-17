@@ -1,0 +1,27 @@
+# Dependencies — reinstalled inside the container
+node_modules
+
+# Build output — rebuilt inside the container
+dist
+
+# Git history — not needed in the image
+.git
+.gitignore
+
+# Local env files — never bake secrets into an image
+.env
+.env.local
+.env.*.local
+
+# Editor files
+.vscode
+.idea
+*.swp
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker files themselves (no need to copy these in)
+Dockerfile
+.dockerignore
