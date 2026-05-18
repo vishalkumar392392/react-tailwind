@@ -61,8 +61,8 @@ export default function Cart({ items, setCartItems }) {
           );
         })
       ) : (
-        <h2 className="flex-center mt-50 dark:text-white">
-          "Shop your shoes and wide.."
+        <h2 className="flex-center mt-50 text-2xl font-semibold dark:text-white">
+          Shop your shoes and wide..
         </h2>
       )}
     </div>

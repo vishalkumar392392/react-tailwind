@@ -159,7 +159,7 @@ pipeline {
                   envsubst "\$SUBST_VARS" < k8s/deployment.yaml  | kubectl apply -n ${NAMESPACE} -f -
                   envsubst "\$SUBST_VARS" < k8s/service.yaml     | kubectl apply -n ${NAMESPACE} -f -
                   envsubst "\$SUBST_VARS" < k8s/hpa.yaml         | kubectl apply -n ${NAMESPACE} -f -
-                  envsubst "\$SUBST_VARS" < k8s/ingress.yaml     | kubectl apply -n ${NAMESPACE} -f -
+                  # envsubst "\$SUBST_VARS" < k8s/ingress.yaml     | kubectl apply -n ${NAMESPACE} -f -
 
                   # 3. Wait for rollout to complete — fail the build if pods don't become healthy
                   kubectl rollout status deployment/${params.IMAGE_NAME} \
