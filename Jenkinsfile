@@ -91,6 +91,12 @@ pipeline {
             }
         }
 
+        stage('Test & Coverage') {
+            steps {
+                sh 'npm run test:coverage'
+            }
+        }
+
         stage('Code Quality - SonarQube') {
             environment {
                 scannerHome = tool 'eventcart-sonar-scanner'
