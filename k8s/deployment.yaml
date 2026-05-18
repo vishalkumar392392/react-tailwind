@@ -1,0 +1,112 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${APP_NAME}
+  labels:
+    app: ${APP_NAME}
+    env: ${NAMESPACE}
+    managed-by: jenkins
+  annotations:
+    kubernetes.io/change-cause: "Build ${BUILD_NUMBER} - ${IMAGE_URI}"
+spec:
+  replicas: ${REPLICAS}
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: ${APP_NAME}
+  template:
+    metadata:
+      labels:
+        app: ${APP_NAME}
+        env: ${NAMESPACE}
+      annotations:
+        # Roll pods automatically when the ConfigMap changes.
+        rollme: "${BUILD_NUMBER}"
+    spec:
+      terminationGracePeriodSeconds: 30
+      securityContext:
+        runAsNonRoot: false
+        fsGroup: 101
+      containers:
+        - name: web
+          image: ${IMAGE_URI}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          env:
+            - name: APP_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: ${APP_NAME}-config
+                  key: APP_ENV
+          resources:
+            requests:
+              cpu: "${REQUEST_CPU}"
+              memory: "${REQUEST_MEMORY}"
+            limits:
+              cpu: "${LIMIT_CPU}"
+              memory: "${LIMIT_MEMORY}"
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 2
+            periodSeconds: 2
+            failureThreshold: 30
+          volumeMounts:
+            - name: nginx-conf
+              mountPath: /etc/nginx/conf.d/default.conf
+              subPath: default.conf
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+            - name: nginx-cache
+              mountPath: /var/cache/nginx
+            - name: nginx-run
+              mountPath: /var/run
+      volumes:
+        - name: nginx-conf
+          configMap:
+            name: ${APP_NAME}-config
+            items:
+              - key: default.conf
+                path: default.conf
+        - name: tmp
+          emptyDir: {}
+        - name: nginx-cache
+          emptyDir: {}
+        - name: nginx-run
+          emptyDir: {}
+      affinity:
+        # Spread replicas across nodes — survives single-node failures.
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: ${APP_NAME}
+                topologyKey: kubernetes.io/hostname

@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ${APP_NAME}
+  labels:
+    app: ${APP_NAME}
+    env: ${NAMESPACE}
+    managed-by: jenkins
+spec:
+  type: LoadBalancer
+  selector:
+    app: ${APP_NAME}
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP

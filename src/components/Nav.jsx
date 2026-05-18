@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import NikeLogo from "../assets/nike-logo.svg?react";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { TbShoppingBag } from "react-icons/tb";
@@ -7,6 +7,17 @@ const ROUTES = ["Home", "About", "Services", "Pricing", "Contact"];
 
 export default function Nav({ onClickCart }) {
   const [isMobileMenuShow, setIsMobileMenu] = useState(true);
+
+  useEffect(() => {
+    const students = async () => {
+      const response = await fetch(
+        "http://abde52e075b054604a366975c65671df-573424c7ef575191.elb.us-east-2.amazonaws.com/students",
+      );
+      console.log(await response.json());
+    };
+    students();
+  }, []);
+
   return (
     <nav className="relative z-10 flex flex-wrap items-center justify-between">
       {/** Logo */}

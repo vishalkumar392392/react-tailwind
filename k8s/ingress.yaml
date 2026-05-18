@@ -1,0 +1,33 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ${APP_NAME}
+  labels:
+    app: ${APP_NAME}
+    env: ${NAMESPACE}
+    managed-by: jenkins
+  annotations:
+    # AWS Load Balancer Controller — provisions an internet-facing ALB.
+    # No custom domain: the ALB's auto-generated DNS name is the public URL.
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
+    alb.ingress.kubernetes.io/healthcheck-path: /healthz
+    alb.ingress.kubernetes.io/healthcheck-interval-seconds: '15'
+    alb.ingress.kubernetes.io/success-codes: '200'
+    alb.ingress.kubernetes.io/group.name: eventcart-${NAMESPACE}
+    alb.ingress.kubernetes.io/tags: env=${NAMESPACE},app=${APP_NAME},managed-by=jenkins
+spec:
+  ingressClassName: alb
+  rules:
+    # No host: → ALB matches any Host header, so the auto-generated
+    # *.elb.amazonaws.com URL works out of the box.
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ${APP_NAME}
+                port:
+                  number: 80

@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ${APP_NAME}-config
+  labels:
+    app: ${APP_NAME}
+    env: ${NAMESPACE}
+    managed-by: jenkins
+data:
+  # Standalone frontend — only env marker exposed for now.
+  # When a backend is added, add API_BASE_URL here and wire it via deployment env.
+  APP_ENV: "${VITE_MODE}"
+
+  # Nginx config — SPA fallback + gzip + cache headers for hashed assets.
+  default.conf: |
+    server {
+      listen       80;
+      server_name  _;
+      root   /usr/share/nginx/html;
+      index  index.html;
+
+      gzip on;
+      gzip_types text/plain text/css application/javascript application/json image/svg+xml;
+      gzip_min_length 1024;
+
+      # Hashed Vite assets — safe to cache aggressively.
+      location /assets/ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+        try_files $uri =404;
+      }
+
+      # Never cache index.html — it pins the bundle version.
+      location = /index.html {
+        add_header Cache-Control "no-store, no-cache, must-revalidate";
+      }
+
+      # Liveness/readiness probe target.
+      location = /healthz {
+        access_log off;
+        return 200 "ok\n";
+      }
+
+      # SPA fallback — client-side routing.
+      location / {
+        try_files $uri $uri/ /index.html;
+      }
+    }

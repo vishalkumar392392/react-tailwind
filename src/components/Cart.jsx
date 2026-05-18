@@ -47,18 +47,24 @@ export default function Cart({ items, setCartItems }) {
   return (
     <div className="">
       <div className="w-16 p-5 text-2xl font-bold dark:text-white">Cart</div>
-      {formattedItems.map((item, i) => {
-        return (
-          <CartItem
-            key={item.product.id.toString() + item.qty.toString() + i}
-            item={item.product}
-            qty={item.qty}
-            size={item.size}
-            handleItemChange={handleChange}
-            deletehandler={deletehandler}
-          />
-        );
-      })}
+      {formattedItems?.length > 0 ? (
+        formattedItems.map((item, i) => {
+          return (
+            <CartItem
+              key={item.product.id.toString() + item.qty.toString() + i}
+              item={item.product}
+              qty={item.qty}
+              size={item.size}
+              handleItemChange={handleChange}
+              deletehandler={deletehandler}
+            />
+          );
+        })
+      ) : (
+        <h2 className="flex-center mt-50 text-2xl font-semibold dark:text-white">
+          Shop your shoes and wide..
+        </h2>
+      )}
     </div>
   );
 }
