@@ -73,7 +73,7 @@ pipeline {
         IMAGE_URI = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${params.IMAGE_NAME}:${IMAGE_TAG}"
 
         NAMESPACE = "${params.ENVIRONMENT}"
-        VITE_MODE = "${params.ENVIRONMENT}"
+        VITE_MODE = "${params.ENVIRONMENT == 'dev' ? 'development' : params.ENVIRONMENT == 'prod' ? 'production' : params.ENVIRONMENT}"
     }
 
     stages {
@@ -87,7 +87,7 @@ pipeline {
         stage('Lint & Build') {
             steps {
                 sh 'npm run lint'
-                sh 'npm run build'
+                sh "npm run build -- --mode ${VITE_MODE}"
             }
         }
 
