@@ -160,7 +160,7 @@ pipeline {
                   envsubst < k8s/ingress.yaml    | kubectl apply -n ${NAMESPACE} -f -
 
                   # 3. Wait for rollout to complete — fail the build if pods don't become healthy
-                  kubectl rollout status deployment/${APP_NAME} \
+                  kubectl rollout status deployment/${params.IMAGE_NAME} \
                     -n ${NAMESPACE} --timeout=5m
                 """
             }
@@ -184,7 +184,7 @@ pipeline {
 
     post {
         success {
-            echo "✅ Deployment successful to ${ENVIRONMENT}"
+            echo "✅ Deployment successful to ${params.ENVIRONMENT}"
         }
         failure {
             echo "❌ Pipeline failed"
