@@ -153,11 +153,13 @@ pipeline {
                   kubectl get ns ${NAMESPACE} || kubectl create ns ${NAMESPACE}
 
                   # 2. Apply manifests (envsubst injects env-specific values)
-                  envsubst < k8s/configmap.yaml   | kubectl apply -n ${NAMESPACE} -f -
-                  envsubst < k8s/deployment.yaml  | kubectl apply -n ${NAMESPACE} -f -
-                  envsubst < k8s/service.yaml    | kubectl apply -n ${NAMESPACE} -f -
-                  envsubst < k8s/hpa.yaml        | kubectl apply -n ${NAMESPACE} -f -
-                  envsubst < k8s/ingress.yaml    | kubectl apply -n ${NAMESPACE} -f -
+                  # Explicit variable list prevents envsubst from blanking nginx vars like \$uri.
+                  SUBST_VARS='\${APP_NAME} \${NAMESPACE} \${VITE_MODE} \${IMAGE_URI} \${REPLICAS} \${BUILD_NUMBER} \${REQUEST_CPU} \${REQUEST_MEMORY} \${LIMIT_CPU} \${LIMIT_MEMORY}'
+                  envsubst "\$SUBST_VARS" < k8s/configmap.yaml   | kubectl apply -n ${NAMESPACE} -f -
+                  envsubst "\$SUBST_VARS" < k8s/deployment.yaml  | kubectl apply -n ${NAMESPACE} -f -
+                  envsubst "\$SUBST_VARS" < k8s/service.yaml     | kubectl apply -n ${NAMESPACE} -f -
+                  envsubst "\$SUBST_VARS" < k8s/hpa.yaml         | kubectl apply -n ${NAMESPACE} -f -
+                  envsubst "\$SUBST_VARS" < k8s/ingress.yaml     | kubectl apply -n ${NAMESPACE} -f -
 
                   # 3. Wait for rollout to complete — fail the build if pods don't become healthy
                   kubectl rollout status deployment/${params.IMAGE_NAME} \
